@@ -5,10 +5,12 @@ class ElementWrapper {
     setAttribute(key, value) {
         this.node.setAttribute(key, value);
     }
+    // 这个对 ElementWrapper 生成的实例上的 appendChild 方法
     appendChild(vchild) {
         vchild.mountTo(this.node);
     }
     mountTo(parent) {
+        // parent 为真实的dom
         parent.appendChild(this.node);
     }
 }
@@ -23,16 +25,18 @@ class TextWrapper {
 }
 
 export class Component {
-    setAttribute(key, value) {
-        this[key] = value;
+    constructor() {
+        this.children = [];
     }
-    mountTo(parent) {
-        let vdom = this.render();
-        vdom.mountTo(parent);
-    }
+    appendChild(vchild) {
+        // console.log(vchild);
+        this.children.push(vchild);
+        console.log(this.children);
+    }   
 }
 
 export const ToyReact = {
+    // 自定义组件传递或者是div span原生字符串传递
     createElement(ele, params, ...children) {
         let _element = null;
         if (typeof ele === 'string') {
@@ -41,19 +45,30 @@ export const ToyReact = {
             _element = new ele;
         }
         
+        let insertChildren = (children) => {
+            for (let child of children) {
+                if (typeof child === 'object' && child instanceof Array) {
+                    insertChildren(child);
+                } else {
+                    if (!(child instanceof Component) &&
+                        !(child instanceof ElementWrapper) &&
+                        !(child instanceof TextWrapper)) {
+                            child = String(child);
+                            child = new TextWrapper(child);
+                    }
+                    _element.appendChild(child);
+                }
+            }
+        }
+        insertChildren(children);
+
         for (let key in params) {
             _element.setAttribute(key, params[key]);
         }
-        console.log(children);
-        for (let child of children) {
-            if (typeof child === 'string') {
-                child = new TextWrapper(child);
-            }
-            _element.appendChild(child);
-        }
+        
         return _element;
     },
-    render(vnode, element) {
-        vnode.mountTo(element);
+    render(vdom, element) {
+        vdom.mountTo(element);
     }
 }

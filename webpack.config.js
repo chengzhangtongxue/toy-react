@@ -28,6 +28,7 @@ module.exports = {
                     options: {
                         presets: ['@babel/preset-env'],
                         plugins: [
+                            // 采用这个插件，把内容编译成 ToyReact.createElement
                             ['@babel/plugin-transform-react-jsx',{pragma: 'ToyReact.createElement'}],
                         ]
                     }
